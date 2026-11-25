@@ -53,11 +53,21 @@ load balancer proxy).
 - Client TLS with a configured keystore
   (`DefaultHttpClientFactory.SSLKeystorePath`) now verifies the server host
   name (Jetty client default since 9.4.15) — a security fix. The default
-  trust-all mode is unchanged.
+  trust-all mode is unchanged, but Jetty 12 now logs a `WARN` when such a
+  trust-all client starts (it flags the insecure configuration).
+- Request paths with ambiguous empty segments (e.g. `/namespace//properties`,
+  produced by an empty namespace name) are rejected by Jetty 12 with `400`
+  instead of reaching the servlet (`404`): Jetty's URI-compliance hardening
+  (CVE-2021-34429). Kept as is; `TestMultiTenancyAPI.test_create03` accepts it.
 
 ## Evaluation
 - Default and Deployment builds succeed on JDK 21.
 - Acceptance tests: 80/80 pass against the Jetty 12 executable jar
   (same suite, unchanged, that passed on Jetty 9.4).
+- Main build unit suite `com.bigdata.rdf.sail.webapp.TestAll` (2197 runs over
+  the triples/sids/quads modes): 16 distinct failing tests, none caused by
+  Jetty 12: 14 in `TestFederatedQuery` (test resource lookup broken on
+  Java 9+, fixed under ISSUE-1), `testServiceNodeBindings` (needs internet
+  access to dbpedia.org) and `test_create03` (see behaviour notes).
 - New requirement found: WAR deployment in a servlet container is not covered
   by the acceptance tests → ISSUE-5.
