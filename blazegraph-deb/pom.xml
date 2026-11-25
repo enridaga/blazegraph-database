@@ -425,8 +425,8 @@ ga('send', 'pageview');
     </dependency>
     <dependency>
       <!-- log4j is the primary logger for bigdata. -->
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
+      <groupId>ch.qos.reload4j</groupId>
+      <artifactId>reload4j</artifactId>
       <version>${log4j.version}</version>
       <!-- There is a bug with log4j 1.2.15 where it has a lot  -->
       <!-- of dependencies that we do not need in its POM. The  -->
@@ -457,12 +457,6 @@ ga('send', 'pageview');
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-reload4j</artifactId>
       <version>${slf4j.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>ch.qos.reload4j</groupId>
-          <artifactId>reload4j</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>

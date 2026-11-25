@@ -116,8 +116,8 @@ ga('send', 'pageview');
     </dependency>
     <dependency>
       <!-- log4j is the primary logger for bigdata. -->
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
+      <groupId>ch.qos.reload4j</groupId>
+      <artifactId>reload4j</artifactId>
       <version>${log4j.version}</version>
     </dependency>
   </dependencies>

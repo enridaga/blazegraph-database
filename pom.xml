@@ -221,7 +221,7 @@ Copyright 2010 by TalkingTrends (Amsterdam, The Netherlands)
     <apache.httpcore.version>4.4</apache.httpcore.version>
     <apache.httpmime.version>4.4</apache.httpmime.version>
     <highscalelib.version>1.1.2</highscalelib.version>
-    <log4j.version>1.2.17</log4j.version>
+    <log4j.version>1.2.27</log4j.version>
     <colt.version>${project.version}</colt.version>
     <fastutil.version>6.5.16</fastutil.version>
     <lgplutils.version>1.0.7-270114</lgplutils.version>
@@ -260,6 +260,37 @@ Copyright 2010 by TalkingTrends (Amsterdam, The Netherlands)
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
         <version>${slf4j.version}</version>
+      </dependency>
+      <!-- log4j 1.2 is replaced by reload4j: keep log4j:log4j and its old SLF4J binding out. -->
+      <dependency>
+        <groupId>org.apache.zookeeper</groupId>
+        <artifactId>zookeeper</artifactId>
+        <version>${zookeeper.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>com.tinkerpop.rexster</groupId>
+        <artifactId>rexster-core</artifactId>
+        <version>${rexster.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
     </dependencies>
   </dependencyManagement>

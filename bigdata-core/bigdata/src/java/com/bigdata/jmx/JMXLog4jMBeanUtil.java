@@ -54,7 +54,7 @@ import javax.management.ObjectName;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.apache.log4j.jmx.HierarchyDynamicMBean;
+
 import org.apache.log4j.spi.LoggerRepository;
 
 /**
@@ -84,7 +84,7 @@ public class JMXLog4jMBeanUtil {
     public static void registerLog4jMBeans() throws JMException {
 
         // Log4J MBean
-        final HierarchyDynamicMBean hdm = new HierarchyDynamicMBean();
+        final Log4jHierarchyMBean hdm = new Log4jHierarchyMBean();
 
         /*
          * Register the hierarchy MBean with the platform's mbean server.
