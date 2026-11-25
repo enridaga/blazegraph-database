@@ -15,12 +15,16 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Launches the Blazegraph executable jar in a separate JVM and waits until
- * its HTTP endpoint is ready.
+ * Launches Blazegraph in a separate JVM and waits until its HTTP endpoint is
+ * ready: either the executable jar ({@link #start(String, String...)}) or the
+ * WAR deployed in Apache Tomcat ({@link #startWar(String)}).
  * <p>
  * Configuration (JVM system properties):
  * <ul>
  * <li>{@code blazegraph.jar} - path of the executable jar under test (required)</li>
+ * <li>{@code blazegraph.war} - path of the WAR under test (WAR tests only)</li>
+ * <li>{@code blazegraph.tomcat.lib} - directory holding the Tomcat jars (WAR tests only)</li>
+ * <li>{@code blazegraph.tomcat.launcher} - the Tomcat launcher source file (WAR tests only)</li>
  * <li>{@code blazegraph.java} - java executable used to run it (optional,
  * defaults to the JVM running the tests)</li>
  * <li>{@code blazegraph.workdir} - parent directory for server working
@@ -32,14 +36,12 @@ public final class BlazegraphServer implements AutoCloseable {
     private static final Duration STARTUP_TIMEOUT = Duration.ofSeconds(180);
 
     private final Path workDir;
-    private final List<String> jvmArgs;
     private final int port;
     private Process process;
 
-    private BlazegraphServer(Path workDir, int port, List<String> jvmArgs) {
+    private BlazegraphServer(Path workDir, int port) {
         this.workDir = workDir;
         this.port = port;
-        this.jvmArgs = List.copyOf(jvmArgs);
     }
 
     /** Starts a server in a fresh working directory. */
@@ -53,9 +55,68 @@ public final class BlazegraphServer implements AutoCloseable {
      * same directory reopens the same database.
      */
     public static BlazegraphServer start(Path workDir, String... jvmArgs) {
-        BlazegraphServer s = new BlazegraphServer(workDir, freePort(), List.of(jvmArgs));
-        s.startProcess();
+        BlazegraphServer s = new BlazegraphServer(workDir, freePort());
+        List<String> cmd = new ArrayList<>();
+        cmd.add(javaExecutable());
+        cmd.add("-server");
+        cmd.add("-Xmx1g");
+        cmd.add("-Djetty.port=" + s.port);
+        cmd.addAll(List.of(jvmArgs));
+        cmd.add("-jar");
+        cmd.add(jar().toString());
+        s.startProcess(cmd);
         return s;
+    }
+
+    /**
+     * Deploys the WAR in Apache Tomcat 9 (an independent javax.servlet
+     * container), in a separate JVM whose class path holds only Tomcat.
+     */
+    public static BlazegraphServer startWar(String name) {
+        Path workDir = newWorkDir(name);
+        BlazegraphServer s = new BlazegraphServer(workDir, freePort());
+        List<String> cmd = new ArrayList<>();
+        cmd.add(javaExecutable());
+        cmd.add("-Xmx1g");
+        cmd.add("-cp");
+        cmd.add(requiredPath("blazegraph.tomcat.lib", true) + "/*");
+        cmd.add(requiredPath("blazegraph.tomcat.launcher", false).toString());
+        cmd.add(war().toString());
+        cmd.add(Integer.toString(s.port));
+        cmd.add("/blazegraph");
+        cmd.add(workDir.resolve("tomcat").toString());
+        s.startProcess(cmd);
+        return s;
+    }
+
+    /** The WAR under test, or {@code null} if it has not been built. */
+    public static Path warOrNull() {
+        String p = System.getProperty("blazegraph.war");
+        if (p == null || p.isBlank()) {
+            return null;
+        }
+        Path war = Paths.get(p).toAbsolutePath().normalize();
+        return Files.isRegularFile(war) ? war : null;
+    }
+
+    private static Path war() {
+        Path war = warOrNull();
+        if (war == null) {
+            throw new IllegalStateException("Blazegraph WAR not found: " + System.getProperty("blazegraph.war"));
+        }
+        return war;
+    }
+
+    private static Path requiredPath(String property, boolean directory) {
+        String p = System.getProperty(property);
+        if (p == null || p.isBlank()) {
+            throw new IllegalStateException("System property " + property + " is not set");
+        }
+        Path path = Paths.get(p).toAbsolutePath().normalize();
+        if (directory ? !Files.isDirectory(path) : !Files.isRegularFile(path)) {
+            throw new IllegalStateException(property + " not found: " + path);
+        }
+        return path;
     }
 
     public static Path newWorkDir(String name) {
@@ -92,15 +153,7 @@ public final class BlazegraphServer implements AutoCloseable {
         return Paths.get(System.getProperty("java.home"), "bin", "java").toString();
     }
 
-    private void startProcess() {
-        List<String> cmd = new ArrayList<>();
-        cmd.add(javaExecutable());
-        cmd.add("-server");
-        cmd.add("-Xmx1g");
-        cmd.add("-Djetty.port=" + port);
-        cmd.addAll(jvmArgs);
-        cmd.add("-jar");
-        cmd.add(jar().toString());
+    private void startProcess(List<String> cmd) {
         ProcessBuilder pb = new ProcessBuilder(cmd)
                 .directory(workDir.toFile())
                 .redirectErrorStream(true)

@@ -30,6 +30,10 @@
     <!-- Blazegraph build under test -->
     <blazegraph.version>2.1.6-SNAPSHOT</blazegraph.version>
     <blazegraph.jar>${project.basedir}/../blazegraph-jar/target/blazegraph-jar-${blazegraph.version}.jar</blazegraph.jar>
+    <!-- WAR under test (WAR deployment tests are skipped if it does not exist) -->
+    <blazegraph.war>${project.basedir}/../blazegraph-war/target/blazegraph-war-${blazegraph.version}.war</blazegraph.war>
+    <!-- Independent javax.servlet container used to deploy the WAR -->
+    <tomcat.version>9.0.124</tomcat.version>
     <!-- JVM used to run the server under test (empty: the JVM running the tests) -->
     <blazegraph.java></blazegraph.java>
 
@@ -72,6 +76,40 @@
 
   <build>
     <plugins>
+      <!--
+        Copy Apache Tomcat (embedded) to target/tomcat. It is NOT a test
+        dependency: the WAR tests start it in a separate JVM whose class path
+        holds only these jars.
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.9.0</version>
+        <executions>
+          <execution>
+            <id>copy-tomcat</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/tomcat</outputDirectory>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.apache.tomcat.embed</groupId>
+                  <artifactId>tomcat-embed-core</artifactId>
+                  <version>${tomcat.version}</version>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.apache.tomcat</groupId>
+                  <artifactId>tomcat-annotations-api</artifactId>
+                  <version>${tomcat.version}</version>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -87,6 +125,9 @@
           <argLine>-Xmx2g</argLine>
           <systemPropertyVariables>
             <blazegraph.jar>${blazegraph.jar}</blazegraph.jar>
+            <blazegraph.war>${blazegraph.war}</blazegraph.war>
+            <blazegraph.tomcat.lib>${project.build.directory}/tomcat</blazegraph.tomcat.lib>
+            <blazegraph.tomcat.launcher>${project.basedir}/src/test/launcher/TomcatWarLauncher.java</blazegraph.tomcat.launcher>
             <blazegraph.java>${blazegraph.java}</blazegraph.java>
             <blazegraph.workdir>${project.build.directory}/work</blazegraph.workdir>
           </systemPropertyVariables>
