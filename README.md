@@ -20,7 +20,7 @@ Up and running with Blazegraph in under 30 seconds:  [Quick Start](https://wiki.
 Blazegraph is designed to be easy to use and get started. It ships without SSL or authentication by default for this reason. For production deployments, we _strongly_ recommend you enable SSL, authentication, and appropriate network configurations. There are some helpful links below to enable you to do this. 
 
 #### Enabling SSL support ####
-To enable SSL support, uncomment the example [jetty.xml](blazegraph-jar/src/main/resources/jetty.xml#L141) and configure it for your local keystore.
+To enable SSL support, uncomment the example [jetty.xml](blazegraph-jar/src/main/resources/jetty.xml#L137) and configure it for your local keystore.
 
 #### Configuration Authentication ####
 By default, Blazegraph ships without authentication enabled. This is great for developing, getting started, and doing research with Blazegraph. However, it's not recommended for any production deployment. To configuration authentication, you must configure it either within the web app container or via a reverse-proxy configuration.
@@ -29,7 +29,7 @@ Note that the Blazegraph namespace feature for [multi-tenancy](https://wiki.blaz
 
 There are three basic options:
 
-1. **Configuring Jetty Authentication for a standalone Jetty deployment**:  Follow the [jetty](http://www.eclipse.org/jetty/documentation/9.2.22.v20170531/configuring-security-authentication.html) guide to configure authentication for the [jetty.xml](blazegraph-jar/src/main/resources/jetty.xml) you use to deploy the server by uncommenting the `<Get name="securityHandler">` section. You'll need to create a [realm.properties](blazegraph-jar/src/main/resources/realm.properties) and update the jetty.xml to point to its location on the filesystem.  Then configure the [web.xml](bigdata-war-html/src/main/webapp/WEB-INF/web.xml) to uncomment the security-constraint.
+1. **Configuring Jetty Authentication for a standalone Jetty deployment**:  Follow the [Jetty 12](https://jetty.org/docs/jetty/12/operations-guide/security/index.html) guide to configure authentication for the [jetty.xml](blazegraph-jar/src/main/resources/jetty.xml) you use to deploy the server by uncommenting the `<Get name="securityHandler">` section. You'll need to create a [realm.properties](blazegraph-jar/src/main/resources/realm.properties) and update the jetty.xml to point to its location on the filesystem.  Then configure the [web.xml](bigdata-war-html/src/main/webapp/WEB-INF/web.xml) to uncomment the security-constraint.
 1. **Configuring Tomcat Authentication for a standalone Tomcat deployment**:  First configure a Tomcat [Realm](https://tomcat.apache.org/tomcat-7.0-doc/realm-howto.html) with your choice of authentication method (JDBC, JNDI, etc.). Then configure the [web.xml](bigdata-war-html/src/main/webapp/WEB-INF/web.xml) to uncomment the security-constraint.
 1. **Setup a reverse-proxy configuration with authentication**:  You can setup an http or https reverse proxy configuration that has authentication and forward requests to the local Blazegraph instance (typically running on localhost:9999). This is a good option with [Nginx](https://community.openhab.org/t/using-nginx-reverse-proxy-authentication-and-https/14542) and [Apache](https://stackoverflow.com/questions/5011102/apache-reverse-proxy-with-basic-authentication). 
 
@@ -37,11 +37,14 @@ There are three basic options:
 If you enable authentication and expose the Blazegraph workbench, you should also take steps to protect against CSRF. Tomcat8 provides a [CSRF filter](https://tomcat.apache.org/tomcat-8.0-doc/config/filter.html#CSRF_Prevention_Filter_for_REST_APIs) that can be configured. For Jetty, if you configure authentication the default value for `SecurityHandler.setSessionRenewedOnAuthentication(true)` can also be used. CSRF protection may require REST clients to implement HTTP headers to be used to interact with the service.
 
 ### Building the code ###
-As a quick start, run `mvn install -DskipTests` or the utility script `./scripts/mavenInstall.sh `.
+Blazegraph requires Java 21 and Maven 3.9 or later. It embeds Jetty 12 and runs the web application on Jetty's `ee8` (`javax.servlet`) environment, so the WAR can also be deployed in `javax.servlet` containers such as Tomcat 9.
+
+As a quick start, run `mvn install -DskipTests` or the utility script `./scripts/mavenInstall.sh `. To also build the executable jar, WAR and packages, run `mvn -P Deployment install -DskipTests`.
 
 For more detailed maven information see the [wiki](https://wiki.blazegraph.com/wiki/index.php/MavenNotes). 
 
-If you build with Java 7, you need to add Maven options for TLS 1.2, i.e. `export MAVEN_OPTS="-Dhttps.protocols=TLSv1.2"`.
+### Compatibility acceptance tests ###
+The [acceptance-tests](acceptance-tests) directory holds a standalone test suite that checks the behaviour of a built distribution (executable jar, WAR, Java APIs). See its [README](acceptance-tests/README.md).
 
 ### Samples and Examples ###
 There are code samples and examples to get started with the Blazegraph Database [here] (https://github.com/blazegraph/blazegraph-samples).  Tinkerpop3 examples are included directly within the Tinkerpop3 repository per below.
