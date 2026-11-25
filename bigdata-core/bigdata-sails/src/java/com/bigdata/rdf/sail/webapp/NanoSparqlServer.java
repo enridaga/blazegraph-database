@@ -328,7 +328,9 @@ public class NanoSparqlServer {
 		// This is for running as the executable jar
 		if (System.getProperty(SystemProperties.JETTY_HOME) == null) {
 
-			final URL jettyJarXml = jettyXml.getClass().getResource("/war");
+			// Java 9+: Class.getResource() on a java.base class no longer searches
+			// the classpath; use the system class loader as Java 8 did.
+			final URL jettyJarXml = ClassLoader.getSystemResource("war");
 
 			System.setProperty(SystemProperties.JETTY_HOME,
 					jettyJarXml.toExternalForm());
