@@ -42,7 +42,7 @@ Copyright 2010 by TalkingTrends (Amsterdam, The Netherlands)
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.10</version>
+        <version>${maven-dependency-plugin.version}</version>
         <executions>
           <execution>
             <id>copy</id>
@@ -68,7 +68,7 @@ Copyright 2010 by TalkingTrends (Amsterdam, The Netherlands)
       </plugin>
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.6</version>
+        <version>${maven-antrun-plugin.version}</version>
         <executions>
           <execution>
             <id>unpack-war</id>
@@ -94,7 +94,7 @@ Copyright 2010 by TalkingTrends (Amsterdam, The Netherlands)
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>2.6</version>
+        <version>${maven-jar-plugin.version}</version>
         <executions>
           <execution>
             <id>empty-javadoc-jar</id>
@@ -112,7 +112,7 @@ Copyright 2010 by TalkingTrends (Amsterdam, The Netherlands)
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>2.4</version>
+        <version>${maven-shade-plugin.version}</version>
         <executions>
           <execution>
             <phase>package</phase>

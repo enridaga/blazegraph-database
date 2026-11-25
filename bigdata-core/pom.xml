@@ -102,7 +102,7 @@ Copyright 2010 by TalkingTrends (Amsterdam, The Netherlands)
     <plugins>
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.6</version>
+        <version>${maven-antrun-plugin.version}</version>
         <executions>
           <execution>
             <id>build-info</id>
@@ -157,7 +157,7 @@ public class BuildInfo {
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.9.1</version>
+        <version>${build-helper-maven-plugin.version}</version>
         <executions>
           <execution>
             <id>add-source</id>

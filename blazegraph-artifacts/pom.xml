@@ -42,7 +42,7 @@ Copyright 2010 by TalkingTrends (Amsterdam, The Netherlands)
       <plugins>
         <plugin>
           <artifactId>maven-assembly-plugin</artifactId>
-          <version>2.5.3</version>
+          <version>${maven-assembly-plugin.version}</version>
           <configuration>
             <descriptors>
               <descriptor>src/main/assembly/blazegraph.xml</descriptor>
