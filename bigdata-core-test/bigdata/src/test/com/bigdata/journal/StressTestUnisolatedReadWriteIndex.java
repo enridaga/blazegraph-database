@@ -42,7 +42,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.jetty.util.ConcurrentHashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.bigdata.btree.BTree;
 import com.bigdata.btree.IIndex;
@@ -261,7 +262,7 @@ public class StressTestUnisolatedReadWriteIndex extends ProxyTestCase<Journal> {
 
         final Collection<Callable<Void>> tasks = new HashSet<Callable<Void>>();
 
-        final ConcurrentHashSet<Thread> threads = new ConcurrentHashSet<Thread>();
+        final Set<Thread> threads = ConcurrentHashMap.newKeySet();
 
         for (int i = 0; i < ntrials; i++) {
 
@@ -416,12 +417,12 @@ public class StressTestUnisolatedReadWriteIndex extends ProxyTestCase<Journal> {
         private final int nops;
         private final double failureRate;
         private final double commitRate;
-        private final ConcurrentHashSet<Thread> threads;
+        private final Set<Thread> threads;
         
         public WriteTask(final Journal journal,
                 final String[] resource, final int trial, final int keyLen,
                 final int nops, final double failureRate, final double commitRate,
-                final ConcurrentHashSet<Thread> threads) {
+                final Set<Thread> threads) {
 
             this.journal = journal;
             

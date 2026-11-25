@@ -30,7 +30,7 @@ import java.util.UUID;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.ee8.webapp.WebAppContext;
 
 import com.bigdata.BigdataStatics;
 import com.bigdata.journal.BufferMode;

@@ -37,11 +37,12 @@ import java.util.concurrent.TimeoutException;
 import javax.servlet.ServletContextListener;
 
 import org.apache.log4j.Logger;
+import org.eclipse.jetty.ee8.nested.ContextHandler;
+import org.eclipse.jetty.ee8.webapp.WebAppContext;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.util.resource.Resource;
-import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.util.resource.ResourceFactory;
 import org.eclipse.jetty.xml.XmlConfiguration;
 
 import com.bigdata.Banner;
@@ -767,18 +768,9 @@ public class NanoSparqlServer {
             // Build the server configuration from that jetty.xml resource.
             final XmlConfiguration configuration;
             {
-                // Open jetty.xml resource.
-                final Resource jettyConfig = Resource.newResource(jettyXmlURL);
-                InputStream is = null;
-                try {
-                    is = jettyConfig.getInputStream();
-                    // Build configuration.
-                    configuration = new XmlConfiguration(is);
-                } finally {
-                    if (is != null) {
-                        is.close();
-                    }
-                }
+                // Read the jetty.xml resource and build the configuration.
+                configuration = new XmlConfiguration(ResourceFactory.root()
+                        .newMemoryResource(jettyXmlURL));
             }
 
             // Configure/apply jetty.resourceBase overrides.
@@ -1118,8 +1110,24 @@ public class NanoSparqlServer {
      */
     public static WebAppContext getWebApp(final Server server) {
 
-        final WebAppContext wac = server
-                .getChildHandlerByClass(WebAppContext.class);
+        WebAppContext wac = null;
+
+        /*
+         * Jetty 12: an ee8 WebAppContext is attached to the server's handler
+         * tree through its core context handler.
+         */
+        for (ContextHandler.CoreContextHandler cch : server
+                .getDescendants(ContextHandler.CoreContextHandler.class)) {
+
+            if (cch.getContextHandler() instanceof WebAppContext) {
+
+                wac = (WebAppContext) cch.getContextHandler();
+
+                break;
+
+            }
+
+        }
 
         /*
          * Note: This assumes that this is the webapp for bigdata. If there are

@@ -37,7 +37,7 @@ import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.Request;
 import org.eclipse.jetty.http.HttpMethod;
 
 import com.bigdata.bop.engine.QueryEngine;
@@ -370,7 +370,7 @@ public class CountersLBSPolicy extends AbstractHostLBSPolicy {
                 for (Map.Entry<String, String> e : opts.requestHeaders
                         .entrySet()) {
 
-                    request.header(e.getKey(), e.getValue());
+                    request.headers(h -> h.add(e.getKey(), e.getValue()));
 
                     if (log.isDebugEnabled())
                         log.debug(e.getKey() + ": " + e.getValue());
@@ -382,7 +382,7 @@ public class CountersLBSPolicy extends AbstractHostLBSPolicy {
             if (opts.entity != null) {
 
             	final EntityContentProvider cp = new EntityContentProvider(opts.entity);
-                request.content(cp, cp.getContentType());
+                request.body(cp);
 
             }
 

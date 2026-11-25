@@ -32,10 +32,10 @@ import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.eclipse.jetty.client.CompletableResponseListener;
+import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.util.FutureResponseListener;
+import org.eclipse.jetty.client.Request;
 
 import com.bigdata.service.fts.FTS;
 import com.bigdata.service.fts.FulltextSearchException;
@@ -93,8 +93,7 @@ public class SolrFulltextSearchImpl implements
       Request request = httpClient.newRequest(query.getEndpoint());
       
       // Limit response content buffer to 512 KiB
-      FutureResponseListener listener =
-         new FutureResponseListener(request, 10 * 1024 * 1024); // 100 MB size
+      final int maxResponseLength = 10 * 1024 * 1024; // 100 MB size
       
       request.param("q", query.getQuery());
       request.param("wt", "json");
@@ -133,8 +132,8 @@ public class SolrFulltextSearchImpl implements
             queryTimeoutSpecified==null ?
             FTS.Options.DEFAULT_TIMEOUT : queryTimeoutSpecified;
       
-      request.send(listener);
-      ContentResponse resp = listener.get(queryTimeoutUsed, TimeUnit.MILLISECONDS);
+      ContentResponse resp = new CompletableResponseListener(request, maxResponseLength)
+            .send().get(queryTimeoutUsed, TimeUnit.MILLISECONDS);
 
       final int statusCode = resp.getStatus();
       if (statusCode != 200) {

@@ -44,7 +44,6 @@ import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 
 import junit.framework.Test;
 
-import org.eclipse.jetty.util.IO;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -726,7 +725,7 @@ public class TestMultiTenancyAPI<S extends IIndexManager> extends
     }
     
     public void testEOFStreams() throws IOException {
-    	final InputStream closed = IO.getClosedStream();
+    	final InputStream closed = InputStream.nullInputStream();
     	
     	assertTrue(closed.read() == -1);
     }

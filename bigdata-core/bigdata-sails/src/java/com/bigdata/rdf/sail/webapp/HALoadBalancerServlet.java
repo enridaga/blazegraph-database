@@ -37,8 +37,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.eclipse.jetty.client.api.Response;
-import org.eclipse.jetty.proxy.ProxyServlet;
+import org.eclipse.jetty.client.Response;
+import org.eclipse.jetty.ee8.proxy.ProxyServlet;
 
 import com.bigdata.BigdataStatics;
 import com.bigdata.counters.CAT;

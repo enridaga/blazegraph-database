@@ -207,9 +207,9 @@ Copyright 2010 by TalkingTrends (Amsterdam, The Netherlands)
     <sesame.version>2.7.12</sesame.version>
     <jsonld.version>0.5.1</jsonld.version>
     <semargl.version>0.6.1</semargl.version>
-    <slf4j.version>1.7.25</slf4j.version>
-    <jetty.version>9.4.12.v20180830</jetty.version>
-    <servlet.version>3.1.0</servlet.version>
+    <slf4j.version>2.0.17</slf4j.version>
+    <jetty.version>12.1.15</jetty.version>
+    <servlet.version>4.0.9</servlet.version>
     <lucene.version>5.5.0</lucene.version>
     <apache.commons_codec.version>1.4</apache.commons_codec.version>
     <apache.commons_configuration.version>1.10</apache.commons_configuration.version>
@@ -233,7 +233,7 @@ Copyright 2010 by TalkingTrends (Amsterdam, The Netherlands)
     <striterator.version>1.0</striterator.version>
     <junit-ext.version>${project.version}</junit-ext.version>
     <junit4.version>4.11</junit4.version>
-    <servlet.version>3.1.0</servlet.version>
+    <servlet.version>4.0.9</servlet.version>
     <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>21</maven.compiler.release>
@@ -253,6 +253,16 @@ Copyright 2010 by TalkingTrends (Amsterdam, The Netherlands)
     <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
     <maven-war-plugin.version>3.5.1</maven-war-plugin.version>
   </properties>
+  <dependencyManagement>
+    <dependencies>
+      <!-- Jetty 12 logs through the SLF4J 2 API: keep a single SLF4J version. -->
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <profiles>
     <profile>
       <id>maven-central</id>

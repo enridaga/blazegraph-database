@@ -1,18 +1,19 @@
 package com.bigdata.rdf.sail.webapp.client;
 
-import java.nio.charset.Charset;
+import java.net.URI;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.HttpRequest;
-import org.eclipse.jetty.client.HttpResponse;
-import org.eclipse.jetty.client.api.Response.ResponseListener;
-import org.eclipse.jetty.client.api.Result;
+import org.eclipse.jetty.client.Request;
+import org.eclipse.jetty.client.Response;
+import org.eclipse.jetty.client.Result;
+import org.eclipse.jetty.client.transport.HttpConversation;
+import org.eclipse.jetty.client.transport.HttpRequest;
+import org.eclipse.jetty.client.transport.HttpResponse;
 import org.eclipse.jetty.http.HttpHeader;
-import org.eclipse.jetty.util.Callback;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.rio.RDFFormat;
 
@@ -22,7 +23,7 @@ public class MockRemoteRepository extends RemoteRepository {
 		public ConnectOptions opts;
 		public HttpRequest request;
 		public IPreparedTupleQuery query;
-		protected List<ResponseListener> listeners;
+		protected Response.CompleteListener listener;
 	}
 	public Data data;
 
@@ -31,49 +32,63 @@ public class MockRemoteRepository extends RemoteRepository {
 		this.data = data;
 	}
 
+	/**
+	 * A request which, instead of going to the network, answers with a canned
+	 * TSV (tuple queries) or N-Triples (graph queries) response.
+	 */
+	private static final class MockRequest extends HttpRequest {
+
+		private final Data data;
+		private final String tupleQueryResponse;
+		private final String graphQueryResponse;
+
+		MockRequest(HttpClient client, URI uri, Data data, String tupleQueryResponse, String graphQueryResponse) {
+			super(client, new HttpConversation(), uri);
+			this.data = data;
+			this.tupleQueryResponse = tupleQueryResponse;
+			this.graphQueryResponse = graphQueryResponse;
+		}
+
+		@Override
+		public void send(Response.CompleteListener listener) {
+			// Store HTTP request
+			data.request = this;
+			data.listener = listener;
+			if (listener instanceof JettyResponseListener) {
+				final JettyResponseListener l = (JettyResponseListener) listener;
+				final HttpResponse response = new HttpResponse(this) {
+					@Override
+					public int getStatus() {
+						return 200;
+					}
+				};
+				final String requestMimeType = getHeaders().get(HttpHeader.ACCEPT).split(";")[0];
+				final TupleQueryResultFormat tupleQueryMimeType = TupleQueryResultFormat.forMIMEType(requestMimeType);
+				final String responseMimeType;
+				final String responseContent;
+				if (tupleQueryMimeType != null) {
+					responseMimeType = TupleQueryResultFormat.TSV.getDefaultMIMEType();
+					responseContent = tupleQueryResponse;
+				} else {
+					responseMimeType = RDFFormat.NTRIPLES.getDefaultMIMEType();
+					responseContent = graphQueryResponse;
+				}
+				response.headers(h -> h.add(HttpHeader.CONTENT_TYPE, responseMimeType));
+				l.onHeaders(response);
+				final ByteBuffer buf = ByteBuffer.wrap(responseContent.getBytes(StandardCharsets.UTF_8));
+				l.onContent(response, org.eclipse.jetty.io.Content.Chunk.from(buf, true), () -> { });
+				l.onSuccess(response);
+				l.onComplete(new Result(this, response));
+			}
+		}
+	}
+
 	public static MockRemoteRepository create(final String tupleQueryResponse, final String graphQueryResponse) {
 		// pojo to retrieve values from mock service
 		final Data data = new Data();
 
 		String serviceURL = "http://localhost";
-		HttpClient httpClient = new HttpClient() {
-			@Override
-			protected void send(HttpRequest request,
-					List<ResponseListener> listeners) {
-				// Store HTTP request
-				data.request = request;
-				data.listeners = listeners;
-				for (ResponseListener listener: listeners) {
-					if (listener instanceof JettyResponseListener) {
-						HttpResponse response = new HttpResponse(request, null){
-							@Override
-							public int getStatus() {
-								return 200;
-							};
-							
-						};
-						String requestMimeType = request.getHeaders().get(HttpHeader.ACCEPT).split(";")[0];
-						TupleQueryResultFormat tupleQueryMimeType = TupleQueryResultFormat.forMIMEType(requestMimeType);
-						String responseMimeType;
-						String responseContent;
-						if (tupleQueryMimeType!=null) {
-							responseMimeType = TupleQueryResultFormat.TSV.getDefaultMIMEType();
-							responseContent = tupleQueryResponse;
-						} else {
-							responseMimeType = RDFFormat.NTRIPLES.getDefaultMIMEType();
-							responseContent = graphQueryResponse;
-						}
-						response.getHeaders().add(HttpHeader.CONTENT_TYPE, responseMimeType);
-						((JettyResponseListener)listener).onHeaders(response);
-						java.nio.ByteBuffer buf = java.nio.ByteBuffer.allocate(responseContent.length());
-						buf.put(responseContent.getBytes(Charset.forName(StandardCharsets.UTF_8.name())));
-						buf.flip();
-						((JettyResponseListener)listener).onContent(response, buf, Callback.NOOP);
-						((JettyResponseListener)listener).onSuccess(response);
-						((JettyResponseListener)listener).onComplete(new Result(request, response));
-					}
-				}
-			}
+		final HttpClient httpClient = new HttpClient() {
 			@Override
 			public boolean isStopped() {
 				return false;
@@ -87,6 +102,12 @@ public class MockRemoteRepository extends RemoteRepository {
 				// Store connection options
 				data.opts = opts;
 				return super.doConnect(opts);
+			}
+
+			@Override
+			public Request newRequest(final String uri, final String method) {
+				return new MockRequest(httpClient, URI.create(uri), data, tupleQueryResponse, graphQueryResponse)
+						.method(getMethod(method));
 			}
 		};
 

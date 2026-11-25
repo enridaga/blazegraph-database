@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 import junit.framework.Test;
 
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.Request;
 import org.eclipse.jetty.server.Server;
 
 import com.bigdata.BigdataStatics;
@@ -391,7 +391,7 @@ public class Test_REST_Structure<S extends IIndexManager> extends
             for (Map.Entry<String, String> e : opts.requestHeaders
                   .entrySet()) {
 
-               request.getHeaders().add(e.getKey(), e.getValue());
+               request.headers(h -> h.add(e.getKey(), e.getValue()));
 
                if (log.isDebugEnabled())
                   log.debug(e.getKey() + ": " + e.getValue());
