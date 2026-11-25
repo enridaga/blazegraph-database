@@ -320,7 +320,7 @@ public class TestFederatedQuery<S extends IIndexManager> extends
     private void loadDataSet(final RemoteRepository rep, final String datasetFile)
             throws Exception {
 
-		final URL datasetUri = TestFederatedQuery.class.getClass().getResource(
+		final URL datasetUri = TestFederatedQuery.class.getResource(
 				TEST_RESOURCE_PATH + datasetFile);
 		
 		if(log.isInfoEnabled()) {
