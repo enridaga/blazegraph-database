@@ -10,4 +10,5 @@ Findings from (c) become new requirements (new issues or amendments).
 
 | Id | Title | Status |
 |----|-------|--------|
-| [ISSUE-1](ISSUE-1-java-21-build.md) | Build and run on Java 21 | In progress |
+| [ISSUE-1](ISSUE-1-java-21-build.md) | Build and run on Java 21 | Done |
+| [ISSUE-2](ISSUE-2-acceptance-tests.md) | Compatibility acceptance test suite | Done |
