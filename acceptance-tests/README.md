@@ -192,7 +192,7 @@ Test IDs appear in each test's `@DisplayName` and in the surefire report.
 | JAPI-05 | Sesame `Repository` API over HTTP (`BigdataSailRemoteRepository`) |
 | JAPI-06 | `RemoteTransactionManager`: read/write commit and abort; read-only snapshot isolation |
 
-### Embedded use — `embedded/EmbeddedDatabaseTest`, `embedded/EmbeddedServerTest`
+### Embedded use — `embedded/EmbeddedDatabaseTest`, `embedded/EmbeddedServerTest`, `embedded/Log4jJmxTest`
 
 | ID | Verifies |
 |---|---|
@@ -201,6 +201,7 @@ Test IDs appear in each test's `@DisplayName` and in the surefire report.
 | EMB-03 | SPARQL UPDATE through a connection |
 | EMB-04 | Committed data persists when the journal is reopened |
 | EMB-05 | `NanoSparqlServer.newInstance(port, indexManager, initParams)` serves the REST API in-process (returns a Jetty `Server`) |
+| EMB-06 | Log levels can be managed over JMX: `log4j:hierarchy=default` (`threshold`, `addLoggerMBean`) and `log4j:logger=NAME` (`name`, `priority`) |
 
 ### WAR deployment — `war/WarDeploymentTest`
 
