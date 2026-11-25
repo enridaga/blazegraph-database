@@ -14,12 +14,18 @@ the main build.
 - **Independent.** This directory is its own Maven project. It is not a module
   of the Blazegraph reactor, does not inherit the Blazegraph parent POM, and
   targets Java 21 (`maven.compiler.release=21`, JUnit 5).
-- **One artifact under test:** the executable jar
-  (`blazegraph-jar-<version>.jar`). It is
+- **Artifacts under test:** the executable jar
+  (`blazegraph-jar-<version>.jar`), which is
   - launched in a separate JVM for the black-box HTTP tests
     (`com.blazegraph.acceptance.http`), and
   - put on the test classpath for the Java API tests
-    (`com.blazegraph.acceptance.javaapi`, `com.blazegraph.acceptance.embedded`).
+    (`com.blazegraph.acceptance.javaapi`, `com.blazegraph.acceptance.embedded`);
+
+  and the WAR (`blazegraph-war-<version>.war`), deployed in Apache Tomcat 9,
+  an independent `javax.servlet` container, started in its own JVM by
+  `src/test/launcher/TomcatWarLauncher.java` with only Tomcat on its class
+  path (`com.blazegraph.acceptance.war`). The WAR tests are skipped when the
+  WAR has not been built.
 - **No HTTP stack from the product.** HTTP tests use `java.net.http.HttpClient`,
   so they observe the server exactly as an external client does. No library
   besides JUnit is added to the classpath, so nothing shadows the classes
@@ -34,7 +40,7 @@ Prerequisites: JDK 21 and Maven 3.9. Build the executable jar first, from the
 repository root:
 
 ```bash
-mvn -P Deployment -DskipTests install -pl blazegraph-jar -am
+mvn -P Deployment -DskipTests install -pl blazegraph-jar,blazegraph-war -am
 ```
 
 Then run the suite from this directory:
@@ -48,7 +54,9 @@ Options:
 | Property | Default | Meaning |
 |---|---|---|
 | `blazegraph.jar` | `../blazegraph-jar/target/blazegraph-jar-${blazegraph.version}.jar` | Executable jar under test |
-| `blazegraph.version` | `2.1.6-SNAPSHOT` | Version used to locate the default jar |
+| `blazegraph.war` | `../blazegraph-war/target/blazegraph-war-${blazegraph.version}.war` | WAR under test |
+| `blazegraph.version` | `2.1.6-SNAPSHOT` | Version used to locate the default jar and WAR |
+| `tomcat.version` | `9.0.124` | Tomcat used to deploy the WAR |
 | `blazegraph.java` | the JVM running Maven | `java` executable used to launch the server |
 
 Examples:
@@ -62,7 +70,7 @@ mvn test -Dgroups=http
 ```
 
 JUnit tags: `http` (black-box over HTTP), `java-api` (remote Java client),
-`embedded` (in-process database and server). Server logs are written to
+`embedded` (in-process database and server), `war` (WAR in Tomcat). Server logs are written to
 `target/work/*/server.log`.
 
 ## Tests by topic
@@ -193,6 +201,17 @@ Test IDs appear in each test's `@DisplayName` and in the surefire report.
 | EMB-03 | SPARQL UPDATE through a connection |
 | EMB-04 | Committed data persists when the journal is reopened |
 | EMB-05 | `NanoSparqlServer.newInstance(port, indexManager, initParams)` serves the REST API in-process (returns a Jetty `Server`) |
+
+### WAR deployment — `war/WarDeploymentTest`
+
+| ID | Verifies |
+|---|---|
+| WAR-01 | The web application starts in Tomcat 9: status page, workbench welcome page, static resources |
+| WAR-02 | SPARQL query and update on the default namespace; malformed query is 400 |
+| WAR-03 | Create, load, delete a namespace |
+| WAR-04 | REST insert, multipart `?updatePost` (Commons FileUpload), `ESTCARD`, access-path delete |
+| WAR-05 | Federated `SERVICE` query (Blazegraph's bundled HTTP client running inside Tomcat) |
+| WAR-06 | The `Location` of a created namespace points into the deployed context |
 
 ## Baseline behaviours worth knowing
 

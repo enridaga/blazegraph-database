@@ -1,5 +1,7 @@
 import java.io.File;
 
+import org.apache.catalina.Context;
+import org.apache.catalina.Lifecycle;
 import org.apache.catalina.startup.Tomcat;
 
 /**
@@ -28,8 +30,19 @@ public class TomcatWarLauncher {
         tomcat.setBaseDir(baseDir.getPath());
         tomcat.setPort(port);
         tomcat.getConnector(); // creates the default HTTP connector
-        tomcat.getHost().setAppBase(baseDir.getPath());
-        tomcat.addWebapp(contextPath, war.getPath());
+        final File appBase = new File(baseDir, "webapps");
+        appBase.mkdirs();
+        tomcat.getHost().setAppBase(appBase.getPath());
+        final Context ctx = tomcat.addWebapp(contextPath, war.getPath());
+        // Tomcat's default web.xml adds a JSP servlet; Jasper is not on the
+        // class path and the web application has no JSPs, so remove it.
+        ctx.addLifecycleListener(event -> {
+            if (Lifecycle.BEFORE_START_EVENT.equals(event.getType()) && ctx.findChild("jsp") != null) {
+                ctx.removeChild(ctx.findChild("jsp"));
+                ctx.removeServletMapping("*.jsp");
+                ctx.removeServletMapping("*.jspx");
+            }
+        });
         tomcat.start();
         System.out.println("Tomcat started on port " + port + ", context " + contextPath);
         tomcat.getServer().await();

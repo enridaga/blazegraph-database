@@ -13,3 +13,5 @@ Findings from (c) become new requirements (new issues or amendments).
 | [ISSUE-1](ISSUE-1-java-21-build.md) | Build and run on Java 21 | Done |
 | [ISSUE-2](ISSUE-2-acceptance-tests.md) | Compatibility acceptance test suite | Done |
 | [ISSUE-3](ISSUE-3-jetty-12.md) | Upgrade Jetty 9.4 to Jetty 12.1 | Done |
+| ISSUE-4 | Security updates of third-party dependencies | In progress |
+| [ISSUE-5](ISSUE-5-war-deployment.md) | Verify WAR deployability | Done |
