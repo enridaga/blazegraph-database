@@ -223,12 +223,12 @@ System.out.println("\n"+make(parts3));
 	  <pre>
 ObjectMatrix2D A = ascending(2,2);
 ObjectMatrix2D B = descending(2,2);
-ObjectMatrix2D _ = null;
+ObjectMatrix2D __ = null;
 
 ObjectMatrix2D[][] parts4 = 
 {
-&nbsp;&nbsp;&nbsp;{ A, _, A, _ },
-&nbsp;&nbsp;&nbsp;{ _, A, _, B }
+&nbsp;&nbsp;&nbsp;{ A, __, A, __ },
+&nbsp;&nbsp;&nbsp;{ __, A, __, B }
 };
 System.out.println("\n"+make(parts4));
 </pre>
@@ -379,15 +379,15 @@ Example:
 	<td> 
 	  <pre>
 ObjectMatrix2D matrix = ... ;
-ObjectMatrix2D _ = null;
+ObjectMatrix2D __ = null;
 ObjectMatrix2D A,B,C,D;
 A = make(2,2); B = make (4,4);
 C = make(4,3); D = make (2,2);
 ObjectMatrix2D[][] parts = 
 {
-&nbsp;&nbsp;&nbsp;{ _, A, _ },
-&nbsp;&nbsp;&nbsp;{ B, _, C },
-&nbsp;&nbsp;&nbsp;{ _, D, _ }
+&nbsp;&nbsp;&nbsp;{ __, A, __ },
+&nbsp;&nbsp;&nbsp;{ B, __, C },
+&nbsp;&nbsp;&nbsp;{ __, D, __ }
 };
 decompose(parts,matrix);
 System.out.println(&quot;\nA = &quot;+A);

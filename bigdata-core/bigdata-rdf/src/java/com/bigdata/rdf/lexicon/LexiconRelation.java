@@ -53,7 +53,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.log4j.Logger;
-import org.omg.CORBA.portable.ValueFactory;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Statement;
