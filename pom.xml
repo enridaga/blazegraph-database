@@ -203,7 +203,7 @@ Copyright 2010 by TalkingTrends (Amsterdam, The Netherlands)
   </contributors>
   <properties>
     <icu.version>4.8</icu.version>
-    <zookeeper.version>3.4.5</zookeeper.version>
+    <zookeeper.version>3.4.14</zookeeper.version>
     <sesame.version>2.7.12</sesame.version>
     <jsonld.version>0.5.1</jsonld.version>
     <semargl.version>0.6.1</semargl.version>
@@ -275,6 +275,15 @@ Copyright 2010 by TalkingTrends (Amsterdam, The Netherlands)
           <exclusion>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
+          </exclusion>
+          <!-- Optional Netty 3 transport (EOL, vulnerable); the default NIO transport is used. -->
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.jboss.netty</groupId>
+            <artifactId>netty</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
