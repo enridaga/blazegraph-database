@@ -120,15 +120,16 @@ public final class DefaultHttpClientFactory implements IHttpClientFactory {
 				log.info(Options.SSL_KEYSTORE_PATH + "=" + sslKeystorePath);
 			}
 
-			final SslContextFactory sslFactory;
+			final SslContextFactory.Client sslFactory;
 
 			if (sslKeystorePath == null) {
 
-				sslFactory = new SslContextFactory(true/* trustAll */);
+				sslFactory = new SslContextFactory.Client(true/* trustAll */);
 
 			} else {
 
-				sslFactory = new SslContextFactory(sslKeystorePath);
+				sslFactory = new SslContextFactory.Client();
+				sslFactory.setKeyStorePath(sslKeystorePath);
 
 			}
 

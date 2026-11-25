@@ -41,7 +41,7 @@ Copyright 2010 by TalkingTrends (Amsterdam, The Netherlands)
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>2.6</version>
+        <version>${maven-jar-plugin.version}</version>
         <executions>
           <execution>
             <goals>
@@ -119,8 +119,8 @@ ga('send', 'pageview');
       <version>${jetty.version}</version>
     </dependency>
     <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
+      <groupId>ch.qos.reload4j</groupId>
+      <artifactId>reload4j</artifactId>
       <version>${log4j.version}</version>
     </dependency>
     <dependency>

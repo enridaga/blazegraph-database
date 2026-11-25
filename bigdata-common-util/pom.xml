@@ -41,7 +41,7 @@ Copyright 2010 by TalkingTrends (Amsterdam, The Netherlands)
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>2.6</version>
+        <version>${maven-jar-plugin.version}</version>
         <executions>
           <execution>
             <goals>
@@ -87,8 +87,8 @@ ga('send', 'pageview');
   </reporting>
   <dependencies>
     <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
+      <groupId>ch.qos.reload4j</groupId>
+      <artifactId>reload4j</artifactId>
       <version>${log4j.version}</version>
     </dependency>
     <dependency>
@@ -107,8 +107,8 @@ ga('send', 'pageview');
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
+      <groupId>org.eclipse.jetty.toolchain</groupId>
+      <artifactId>jetty-servlet-api</artifactId>
       <version>${servlet.version}</version>
     </dependency>
     <dependency>
@@ -162,7 +162,7 @@ ga('send', 'pageview');
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
-      <version>${jackson.version}</version>
+      <version>${jackson-annotations.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>

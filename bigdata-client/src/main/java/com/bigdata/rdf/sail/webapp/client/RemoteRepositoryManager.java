@@ -46,8 +46,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.log4j.Logger;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.HttpRequest;
-import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.Request;
 import org.eclipse.jetty.http.HttpMethod;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.GraphQueryResult;
@@ -1600,13 +1599,13 @@ public class RemoteRepositoryManager extends RemoteRepositoryBase implements Aut
         Request request = null;
         try {
 
-            request = (HttpRequest) newRequest(urlString.toString(), opts.method);
+            request = newRequest(urlString.toString(), opts.method);
 
             if (opts.requestHeaders != null) {
 
                 for (Map.Entry<String, String> e : opts.requestHeaders.entrySet()) {
 
-                    request.header(e.getKey(), e.getValue());
+                    request.headers(h -> h.add(e.getKey(), e.getValue()));
 
                     if (log.isDebugEnabled())
                         log.debug(e.getKey() + ": " + e.getValue());
@@ -1619,7 +1618,7 @@ public class RemoteRepositoryManager extends RemoteRepositoryBase implements Aut
 
                 final EntityContentProvider cp = new EntityContentProvider(opts.entity);
 
-                request.content(cp, cp.getContentType());
+                request.body(cp);
 
             }
 

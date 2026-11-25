@@ -26,7 +26,7 @@ package com.bigdata.rdf.internal;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
-import javax.xml.bind.DatatypeConverter;
+import java.util.HexFormat;
 
 import com.bigdata.rdf.internal.impl.literal.AbstractLiteralIV;
 import com.bigdata.rdf.internal.impl.literal.UUIDLiteralIV;
@@ -64,7 +64,7 @@ public class InlineHexUUIDURIHandler extends InlineURIHandler {
         }
         
         try {
-        	final byte uuid[] = DatatypeConverter.parseHexBinary(localName);
+        	final byte uuid[] = HexFormat.of().parseHex(localName);
             return new UUIDLiteralIV(asUuid(uuid));
         } catch (IllegalArgumentException ex) {
             /*
@@ -82,7 +82,7 @@ public class InlineHexUUIDURIHandler extends InlineURIHandler {
 
     	final UUID uuid = ((UUIDLiteralIV) delegate).getInlineValue();
 
-		final String localName = DatatypeConverter.printHexBinary(asBytes(uuid));
+		final String localName = HexFormat.of().withUpperCase().formatHex(asBytes(uuid));
     	
 		return localName;
 	}

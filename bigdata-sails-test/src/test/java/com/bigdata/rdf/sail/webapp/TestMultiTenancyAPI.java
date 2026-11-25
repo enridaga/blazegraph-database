@@ -44,7 +44,6 @@ import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 
 import junit.framework.Test;
 
-import org.eclipse.jetty.util.IO;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -499,8 +498,10 @@ public class TestMultiTenancyAPI<S extends IIndexManager> extends
                 m_mgr.getRepositoryProperties(namespace2);
                 fail("Should not exist: " + namespace2);
             } catch (HttpException ex) {
-                // Expected status code.
-                assertEquals(404,ex.getStatusCode());
+                // Expected status code. Jetty 12 rejects the ambiguous empty
+                // path segment of an empty namespace (/namespace//...) with 400.
+                assertTrue("status=" + ex.getStatusCode(), ex.getStatusCode() == 404
+                        || (namespace2.isEmpty() && ex.getStatusCode() == 400));
             }
         }
         
@@ -726,7 +727,7 @@ public class TestMultiTenancyAPI<S extends IIndexManager> extends
     }
     
     public void testEOFStreams() throws IOException {
-    	final InputStream closed = IO.getClosedStream();
+    	final InputStream closed = InputStream.nullInputStream();
     	
     	assertTrue(closed.read() == -1);
     }

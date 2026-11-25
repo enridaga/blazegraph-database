@@ -664,7 +664,7 @@ public class LinkedBlockingQueueTest extends JSR166TestCase {
     public void testToArray_NullArg() {
         LinkedBlockingQueue q = populatedQueue(SIZE);
         try {
-            q.toArray(null);
+            q.toArray((Object[]) null);
             shouldThrow();
         } catch (NullPointerException success) {}
     }

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "https://jetty.org/configure_10_0.dtd">
 <!-- See http://www.eclipse.org/jetty/documentation/current/ -->
 <!-- See http://wiki.eclipse.org/Jetty/Reference/jetty.xml_syntax -->
 <Configure id="Server" class="org.eclipse.jetty.server.Server">
@@ -20,7 +20,7 @@
   <!-- Consult the javadoc of o.e.j.util.thread.QueuedThreadPool   -->
   <!-- for all configuration that may be set here.                 -->
   <!-- =========================================================== -->
-  <Arg name="threadpool">
+  <Arg name="threadPool">
     <New id="threadpool" class="org.eclipse.jetty.util.thread.QueuedThreadPool"/>
   </Arg>
   <Get name="ThreadPool">
@@ -50,12 +50,6 @@
            <Ref refid="MBeanServer" />
          </Arg>
        </New>
-     </Arg>
-   </Call>-->
-  <!-- Add the static log to the MBean server. 
-   <Call name="addBean">
-     <Arg>
-       <New class="org.eclipse.jetty.util.log.Log" />
      </Arg>
    </Call>-->
   <!-- For remote MBean access (optional)  
@@ -139,9 +133,9 @@
     </Arg>
   </Call>
   <!-- HTTPS Configuration -->
-  <!-- See https://www.eclipse.org/jetty/documentation/9.4.x/configuring-ssl.html for information on generating certificates, etc. -->
+  <!-- See https://jetty.org/docs/jetty/12/operations-guide/protocols/index.html#ssl for information on generating certificates, etc. -->
   <!-- Uncomment and configure to enable SSL support.
-  <New id="sslContextFactory" class="org.eclipse.jetty.util.ssl.SslContextFactory">
+  <New id="sslContextFactory" class="org.eclipse.jetty.util.ssl.SslContextFactory$Server">
     <Set name="KeyStorePath"><Property name="jetty.home" default="."/>/etc/keystore</Set>
     <Set name="KeyStorePassword">changeit</Set>
     <Set name="KeyManagerPassword">changeit</Set>
@@ -215,8 +209,8 @@
   <!-- Set handler Collection Structure                            -->
   <!-- =========================================================== -->
   <Set name="handler">
-    <New id="Handlers" class="org.eclipse.jetty.server.handler.HandlerCollection">
-      <Set name="handlers">
+    <New id="Handlers" class="org.eclipse.jetty.server.Handler$Sequence">
+      <Arg>
         <Array type="org.eclipse.jetty.server.Handler">
           <Item>
             <New id="Contexts" class="org.eclipse.jetty.server.handler.ContextHandlerCollection">
@@ -225,22 +219,22 @@
                   <New id="moved" class="org.eclipse.jetty.server.handler.MovedContextHandler">
                     <!-- This is the redirect from root to /blazegraph -->
                     <Set name="contextPath">/</Set>
-                    <Set name="newContextURL">/blazegraph</Set>
-                    <Set name="permanent">true</Set>
-                    <Set name="discardPathInfo">false</Set>
+                    <Set name="redirectURI">/blazegraph</Set>
+                    <Set name="statusCode">301</Set>
+                    <Set name="discardPathInContext">false</Set>
                     <Set name="discardQuery">false</Set>
                   </New>
                 </Arg>
               </Call>
               <Call name="addHandler">
                 <Arg>
-                  <New id="moved" class="org.eclipse.jetty.server.handler.MovedContextHandler">
+                  <New id="movedLegacy" class="org.eclipse.jetty.server.handler.MovedContextHandler">
                     <!-- This is the redirect from /bigdata to /blazegraph -->
                     <!-- Note that this does not work for POST data based the semantics of the 301 response -->
                     <Set name="contextPath">/bigdata</Set>
-                    <Set name="newContextURL">/blazegraph</Set>
-                    <Set name="permanent">true</Set>
-                    <Set name="discardPathInfo">false</Set>
+                    <Set name="redirectURI">/blazegraph</Set>
+                    <Set name="statusCode">301</Set>
+                    <Set name="discardPathInContext">false</Set>
                     <Set name="discardQuery">false</Set>
                   </New>
                 </Arg>
@@ -248,12 +242,12 @@
               <Call name="addHandler">
                 <Arg>
                   <!-- This is the bigdata web application. -->
-                  <New id="WebAppContext" class="org.eclipse.jetty.webapp.WebAppContext">
+                  <New id="WebAppContext" class="org.eclipse.jetty.ee8.webapp.WebAppContext">
                     <Set name="war">
                       <SystemProperty name="jetty.home" default="."/>
                     </Set>
                     <Set name="contextPath">/blazegraph</Set>
-                    <Set name="descriptor">WEB-INF/web.xml</Set>
+                    <!-- The descriptor defaults to WEB-INF/web.xml inside the war. -->
                     <Set name="parentLoaderPriority">true</Set>
                     <Set name="extractWAR">false</Set>
                     <Set name="maxFormContentSize">10485760</Set>
@@ -261,7 +255,7 @@
                       <SystemProperty name="jetty.overrideWebXml" default="./override-web.xml"/>
                     </Set>
                     <!-- Uncomment the section below to add
-	                 Digest authentication per http://www.eclipse.org/jetty/documentation/9.2.22.v20170531/configuring-security-authentication.html
+	                 Digest authentication per https://jetty.org/docs/jetty/12/operations-guide/security/index.html
 			 You must update the path to the realm.properties file to be a location on your machine.
 			 There is an example in blazegraph-jar/src/main/resources/realm.properties
 
@@ -269,8 +263,8 @@
                       <Set name="loginService">
                         <New class="org.eclipse.jetty.security.HashLoginService">
                           <Set name="name">Blazegraph Authentication</Set>
-                          <Set name="config">/path/to/your/realm.properties</Set>
-                          <Set name="refreshInterval">0</Set>
+                          <Set name="config"><Call class="org.eclipse.jetty.util.resource.ResourceFactory" name="root"><Call name="newResource"><Arg>/path/to/your/realm.properties</Arg></Call></Call></Set>
+                          <Set name="reloadInterval">0</Set>
                         </New>
                       </Set>
                     </Get>
@@ -281,7 +275,7 @@
             </New>
           </Item>
         </Array>
-      </Set>
+      </Arg>
     </New>
   </Set>
   <Get id="oldhandler" name="handler"/>
@@ -290,28 +284,16 @@
       <Set name="handler">
         <Ref refid="oldhandler"/>
       </Set>
-      <Set name="rewriteRequestURI">
-        <Property name="jetty.rewrite.rewriteRequestURI" deprecated="rewrite.rewriteRequestURI" default="true"/>
-      </Set>
-      <Set name="rewritePathInfo">
-        <Property name="jetty.rewrite.rewritePathInfo" deprecated="rewrite.rewritePathInfo" default="false"/>
-      </Set>
       <Set name="originalPathAttribute">
         <Property name="jetty.rewrite.originalPathAttribute" deprecated="rewrite.originalPathAttribute" default="requestedPath"/>
       </Set>
-      <!-- Add rule to protect against IE ssl bug -->
-      <Call name="addRule">
-        <Arg>
-          <New class="org.eclipse.jetty.rewrite.handler.MsieSslRule"/>
-        </Arg>
-      </Call>
       <!-- Add Header for X-Frame-Options. See https://jira.blazegraph.com/browse/BLZG-8865 -->
       <Call name="addRule">
         <Arg>
           <New class="org.eclipse.jetty.rewrite.handler.HeaderPatternRule">
             <Set name="pattern">/*</Set>
-            <Set name="name">X-Frame-Options</Set>
-            <Set name="value">SAMEORIGIN</Set>
+            <Set name="headerName">X-Frame-Options</Set>
+            <Set name="headerValue">SAMEORIGIN</Set>
           </New>
         </Arg>
       </Call>

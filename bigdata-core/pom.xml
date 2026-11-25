@@ -102,7 +102,7 @@ Copyright 2010 by TalkingTrends (Amsterdam, The Netherlands)
     <plugins>
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.6</version>
+        <version>${maven-antrun-plugin.version}</version>
         <executions>
           <execution>
             <id>build-info</id>
@@ -157,7 +157,7 @@ public class BuildInfo {
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.9.1</version>
+        <version>${build-helper-maven-plugin.version}</version>
         <executions>
           <execution>
             <id>add-source</id>
@@ -214,8 +214,8 @@ public class BuildInfo {
     </dependency>
     <dependency>
       <!-- log4j is the primary logger for bigdata. -->
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
+      <groupId>ch.qos.reload4j</groupId>
+      <artifactId>reload4j</artifactId>
       <version>${log4j.version}</version>
       <!-- There is a bug with log4j 1.2.15 where it has a lot  -->
       <!-- of dependencies that we do not need in its POM. The  -->
@@ -244,7 +244,7 @@ public class BuildInfo {
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
+      <artifactId>slf4j-reload4j</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
     <dependency>
@@ -295,7 +295,7 @@ public class BuildInfo {
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
-      <version>${jackson.version}</version>
+      <version>${jackson-annotations.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -379,11 +379,6 @@ public class BuildInfo {
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-continuation</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-http</artifactId>
       <version>${jetty.version}</version>
     </dependency>
@@ -413,13 +408,13 @@ public class BuildInfo {
       <version>${jetty.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-webapp</artifactId>
+      <groupId>org.eclipse.jetty.ee8</groupId>
+      <artifactId>jetty-ee8-webapp</artifactId>
       <version>${jetty.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-servlet</artifactId>
+      <groupId>org.eclipse.jetty.ee8</groupId>
+      <artifactId>jetty-ee8-servlet</artifactId>
       <version>${jetty.version}</version>
     </dependency>
     <dependency>
@@ -443,13 +438,13 @@ public class BuildInfo {
       <version>${jetty.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-proxy</artifactId>
+      <groupId>org.eclipse.jetty.ee8</groupId>
+      <artifactId>jetty-ee8-proxy</artifactId>
       <version>${jetty.version}</version>
     </dependency>
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
+      <groupId>org.eclipse.jetty.toolchain</groupId>
+      <artifactId>jetty-servlet-api</artifactId>
       <version>${servlet.version}</version>
     </dependency>
   </dependencies>

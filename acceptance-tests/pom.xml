@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Blazegraph compatibility acceptance tests.
+
+  This is a standalone Maven project: it is NOT a module of the Blazegraph
+  reactor and does not inherit from its parent POM. It exercises an already
+  built Blazegraph executable jar (property "blazegraph.jar") in two ways:
+
+   * black-box over HTTP, by launching the jar in a separate JVM;
+   * through the public Java APIs (embedded journal, embedded server,
+     remote client), compiled and run against that same jar.
+
+  See README.md for the list of tests and how to run them.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.blazegraph.acceptance</groupId>
+  <artifactId>blazegraph-acceptance-tests</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <name>Blazegraph Compatibility Acceptance Tests</name>
+
+  <properties>
+    <maven.compiler.release>21</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!-- Blazegraph build under test -->
+    <blazegraph.version>2.1.6-SNAPSHOT</blazegraph.version>
+    <blazegraph.jar>${project.basedir}/../blazegraph-jar/target/blazegraph-jar-${blazegraph.version}.jar</blazegraph.jar>
+    <!-- WAR under test (WAR deployment tests are skipped if it does not exist) -->
+    <blazegraph.war>${project.basedir}/../blazegraph-war/target/blazegraph-war-${blazegraph.version}.war</blazegraph.war>
+    <!-- Independent javax.servlet container used to deploy the WAR -->
+    <tomcat.version>9.0.124</tomcat.version>
+    <!-- JVM used to run the server under test (empty: the JVM running the tests) -->
+    <blazegraph.java></blazegraph.java>
+
+    <junit.version>5.14.4</junit.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!--
+      Public Java APIs under test. The executable jar is a self-contained
+      distribution (Blazegraph, its dependencies, jetty.xml and the web
+      application), so the Java API tests use exactly the artifact that the
+      HTTP tests launch. No other library is added to the test classpath, to
+      avoid shadowing classes bundled in that jar.
+    -->
+    <dependency>
+      <groupId>com.blazegraph</groupId>
+      <artifactId>blazegraph-jar</artifactId>
+      <version>${blazegraph.version}</version>
+      <scope>system</scope>
+      <systemPath>${blazegraph.jar}</systemPath>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!--
+        Copy Apache Tomcat (embedded) to target/tomcat. It is NOT a test
+        dependency: the WAR tests start it in a separate JVM whose class path
+        holds only these jars.
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.9.0</version>
+        <executions>
+          <execution>
+            <id>copy-tomcat</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/tomcat</outputDirectory>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.apache.tomcat.embed</groupId>
+                  <artifactId>tomcat-embed-core</artifactId>
+                  <version>${tomcat.version}</version>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.apache.tomcat</groupId>
+                  <artifactId>tomcat-annotations-api</artifactId>
+                  <version>${tomcat.version}</version>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.4</version>
+        <configuration>
+          <redirectTestOutputToFile>true</redirectTestOutputToFile>
+          <trimStackTrace>false</trimStackTrace>
+          <argLine>-Xmx2g</argLine>
+          <systemPropertyVariables>
+            <blazegraph.jar>${blazegraph.jar}</blazegraph.jar>
+            <blazegraph.war>${blazegraph.war}</blazegraph.war>
+            <blazegraph.tomcat.lib>${project.build.directory}/tomcat</blazegraph.tomcat.lib>
+            <blazegraph.tomcat.launcher>${project.basedir}/src/test/launcher/TomcatWarLauncher.java</blazegraph.tomcat.launcher>
+            <blazegraph.java>${blazegraph.java}</blazegraph.java>
+            <blazegraph.workdir>${project.build.directory}/work</blazegraph.workdir>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

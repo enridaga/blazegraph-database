@@ -28,23 +28,25 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.ByteBuffer;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.Base64;
 import java.util.Random;
 
-import org.eclipse.jetty.client.AsyncContentProvider;
-import org.eclipse.jetty.client.api.ContentProvider;
-import org.eclipse.jetty.util.B64Code;
+import org.eclipse.jetty.client.ByteBufferRequestContent;
+import org.eclipse.jetty.client.Request;
+import org.eclipse.jetty.io.Content;
 
 import com.bigdata.util.BytesUtil;
 
-public class MultipartContentProvider implements AsyncContentProvider {
+public class MultipartContentProvider implements Request.Content {
 	
 	final String m_boundary;
 	
 	final ByteArrayOutputStream m_data = new ByteArrayOutputStream();
 	
 	final Writer m_writer = new OutputStreamWriter(m_data);
+	
+	/** Snapshot of the parts, taken when the body is first read. */
+	private Request.Content m_content = null;
 	
 	public MultipartContentProvider() {
 		m_boundary = BytesUtil.toHexString(new int[] {new Random().nextInt()});
@@ -56,33 +58,36 @@ public class MultipartContentProvider implements AsyncContentProvider {
 		}
 	}
 
+	private synchronized Request.Content content() {
+		if (m_content == null) {
+			m_content = new ByteBufferRequestContent(ByteBuffer.wrap(m_data.toByteArray()));
+		}
+		return m_content;
+	}
+
 	@Override
-	public Iterator<ByteBuffer> iterator() {
-		return new Iterator<ByteBuffer>() {
-			ByteBuffer bb = ByteBuffer.wrap(m_data.toByteArray());
-			
-			@Override
-			public boolean hasNext() {
-				return bb != null;
-			}
+	public Content.Chunk read() {
+		return content().read();
+	}
 
-			@Override
-			public ByteBuffer next() {
-				if (bb == null) {
-					throw new NoSuchElementException();
-				}
-				final ByteBuffer ret = bb;
-				bb = null;
-				
-				return ret;
-			}
+	@Override
+	public void demand(final Runnable demandCallback) {
+		content().demand(demandCallback);
+	}
 
-			@Override
-			public void remove() {
-				throw new UnsupportedOperationException();
-			}
-			
-		};
+	@Override
+	public void fail(final Throwable failure) {
+		content().fail(failure);
+	}
+
+	@Override
+	public void fail(final Throwable failure, final boolean last) {
+		content().fail(failure, last);
+	}
+
+	@Override
+	public boolean rewind() {
+		return content().rewind();
 	}
 
 	@Override
@@ -95,13 +100,8 @@ public class MultipartContentProvider implements AsyncContentProvider {
    	 *	Content-Disposition: form-data; name="files"; filename="file1.txt"
    	 *	Content-Type: text/plain
 	 */
-	public void addPart(final String name, final ContentProvider part, final String mimetype) {
+	public void addPart(final String name, final Request.Content part, final String mimetype) {
 		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void setListener(Listener arg0) {
-		throw new UnsupportedOperationException("Async support not yet available");
 	}
 
 	public void addPart(String name, byte[] data, String mimetype) {
@@ -112,7 +112,7 @@ public class MultipartContentProvider implements AsyncContentProvider {
 			m_writer.write("Content-Type: " + mimetype +"\n");
 			m_writer.write("Content-Transfer-Encoding: base64\n\n");
 			
-			m_writer.write(B64Code.encode(data));
+			m_writer.write(Base64.getEncoder().encodeToString(data));
 			m_writer.write("\n");
 			
 			m_writer.flush();
